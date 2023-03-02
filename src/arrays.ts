@@ -117,9 +117,9 @@ export function makeMath(addends: number[]): string {
  * For instance, the array [1, 9, -5, 7] would become [1, 9, -5, 10, 7]
  * And the array [1, 9, 7] would become [1, 9, 7, 17]
  */
-// make two arrays with positive and negative
-// find sum of positives
-// put first negative, put sum, then put all negatives
+// find index of first negative number
+// find sum of positives before first negative number
+// insert sum after first negative number using splice
 export function injectPositive(values: number[]): number[] {
     const firstNegative = values.findIndex((val: number): boolean => val < 0);
     let final: number[];
