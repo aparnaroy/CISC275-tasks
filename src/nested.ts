@@ -1,5 +1,6 @@
 import { Answer } from "./interfaces/answer";
 import { Question, QuestionType } from "./interfaces/question";
+import { makeBlankQuestion } from "./objects";
 
 /**
  * Consumes an array of questions and returns a new array with only the questions
@@ -62,14 +63,23 @@ export function getNames(questions: Question[]): string[] {
  * Consumes an array of questions and returns the sum total of all their points added together.
  */
 export function sumPoints(questions: Question[]): number {
-    return 0;
+    const sumPoints = questions.reduce(
+        (sum: number, q: Question) => sum + q.points,
+        0
+    );
+    return sumPoints;
 }
 
 /***
- * Consumes an array of questions and returns the sum total of the PUBLISHED questions.
+ * Consumes an array of questions and returns the sum total of the PUBLISHED questions' points.
  */
 export function sumPublishedPoints(questions: Question[]): number {
-    return 0;
+    const publishedQs = getPublishedQuestions(questions);
+    const totalPoints = publishedQs.reduce(
+        (total: number, q: Question) => total + q.points,
+        0
+    );
+    return totalPoints;
 }
 
 /***
@@ -90,7 +100,13 @@ id,name,options,points,published
  * Check the unit tests for more examples!
  */
 export function toCSV(questions: Question[]): string {
-    return "";
+    const qCSV = questions
+        .map(
+            (q: Question): string =>
+                `${q.id},${q.name},${q.options.length},${q.points},${q.published}`
+        )
+        .join("\n");
+    return "id,name,options,points,published\n" + qCSV;
 }
 
 /**
@@ -99,7 +115,15 @@ export function toCSV(questions: Question[]): string {
  * making the `text` an empty string, and using false for both `submitted` and `correct`.
  */
 export function makeAnswers(questions: Question[]): Answer[] {
-    return [];
+    const answers = questions.map(
+        (q: Question): Answer => ({
+            questionId: q.id,
+            text: "",
+            submitted: false,
+            correct: false
+        })
+    );
+    return answers;
 }
 
 /***
@@ -107,7 +131,26 @@ export function makeAnswers(questions: Question[]): Answer[] {
  * each question is now published, regardless of its previous published status.
  */
 export function publishAll(questions: Question[]): Question[] {
-    return [];
+    /*const newQs = questions.map(
+        (q: Question): Question => ({
+            published: true,
+            id: q.id,
+            name: q.name,
+            body: q.body,
+            type: q.type,
+            options: q.options,
+            expected: q.expected,
+            points: q.points
+        })
+    );*/
+    const newQs = questions.map(
+        (q: Question): Question => ({
+            ...q,
+            published: true,
+            options: [...q.options]
+        })
+    );
+    return newQs;
 }
 
 /***
@@ -115,6 +158,16 @@ export function publishAll(questions: Question[]): Question[] {
  * are the same type. They can be any type, as long as they are all the SAME type.
  */
 export function sameType(questions: Question[]): boolean {
+    if (questions.length === 0) {
+        return true;
+    }
+    const firstQType = questions[0].type;
+    const sameTypeQs = questions.filter(
+        (q: Question): boolean => q.type === firstQType
+    );
+    if (sameTypeQs.length === questions.length) {
+        return true;
+    }
     return false;
 }
 
@@ -129,7 +182,14 @@ export function addNewQuestion(
     name: string,
     type: QuestionType
 ): Question[] {
-    return [];
+    const newQs = questions.map(
+        (q: Question): Question => ({
+            ...q,
+            options: [...q.options]
+        })
+    );
+    newQs.splice(questions.length, 0, makeBlankQuestion(id, name, type));
+    return newQs;
 }
 
 /***
