@@ -1,6 +1,6 @@
 import { Answer } from "./interfaces/answer";
 import { Question, QuestionType } from "./interfaces/question";
-import { makeBlankQuestion } from "./objects";
+import { duplicateQuestion, makeBlankQuestion } from "./objects";
 
 /**
  * Consumes an array of questions and returns a new array with only the questions
@@ -131,18 +131,6 @@ export function makeAnswers(questions: Question[]): Answer[] {
  * each question is now published, regardless of its previous published status.
  */
 export function publishAll(questions: Question[]): Question[] {
-    /*const newQs = questions.map(
-        (q: Question): Question => ({
-            published: true,
-            id: q.id,
-            name: q.name,
-            body: q.body,
-            type: q.type,
-            options: q.options,
-            expected: q.expected,
-            points: q.points
-        })
-    );*/
     const newQs = questions.map(
         (q: Question): Question => ({
             ...q,
@@ -202,7 +190,13 @@ export function renameQuestionById(
     targetId: number,
     newName: string
 ): Question[] {
-    return [];
+    const newQs = questions.map(
+        (q: Question): Question =>
+            q.id === targetId
+                ? { ...q, options: [...q.options], name: newName }
+                : { ...q, options: [...q.options], name: q.name }
+    );
+    return newQs;
 }
 
 /***
@@ -217,7 +211,35 @@ export function changeQuestionTypeById(
     targetId: number,
     newQuestionType: QuestionType
 ): Question[] {
-    return [];
+    const newQs = questions.map(
+        (q: Question): Question =>
+            q.id === targetId
+                ? newQuestionType !== "multiple_choice_question"
+                    ? { ...q, options: [], type: newQuestionType }
+                    : { ...q, options: [...q.options], type: newQuestionType }
+                : { ...q, options: [...q.options] }
+    );
+    return newQs;
+}
+
+/**
+ * Helper function for editOption() function. If the `targetOptionIndex` is -1, the
+ * `newOption` is  added to the end of the options list.
+ * Otherwise, it replaces the existing element at the `targetOptionIndex`.
+ * rH stands for replacing options helper.
+ */
+export function rH(
+    options: string[],
+    targetOptionIndex: number,
+    newOption: string
+): string[] {
+    if (targetOptionIndex === -1) {
+        return [...options, newOption];
+    } else {
+        const ops = [...options];
+        ops.splice(targetOptionIndex, 1, newOption);
+        return ops;
+    }
 }
 
 /**
@@ -236,7 +258,13 @@ export function editOption(
     targetOptionIndex: number,
     newOption: string
 ): Question[] {
-    return [];
+    const newQs = questions.map(
+        (q: Question): Question =>
+            q.id === targetId
+                ? { ...q, options: rH(q.options, targetOptionIndex, newOption) }
+                : { ...q, options: [...q.options] }
+    );
+    return newQs;
 }
 
 /***
@@ -250,5 +278,18 @@ export function duplicateQuestionInArray(
     targetId: number,
     newId: number
 ): Question[] {
-    return [];
+    const newQs = questions.map(
+        (q: Question): Question => ({
+            ...q,
+            options: [...q.options]
+        })
+    );
+    const qToDuplicate = questions.find(
+        (q: Question): boolean => q.id === targetId
+    );
+    if (qToDuplicate !== undefined) {
+        const qIndex = questions.indexOf(qToDuplicate);
+        newQs.splice(qIndex + 1, 0, duplicateQuestion(newId, qToDuplicate));
+    }
+    return newQs;
 }
