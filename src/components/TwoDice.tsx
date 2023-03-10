@@ -23,9 +23,6 @@ export function TwoDice(): JSX.Element {
         rollRight(d6());
     }
 
-    const outcome =
-        leftDie === rightDie ? (leftDie === 1 ? " Lose" : " Win") : "";
-
     return (
         <div>
             <span data-testid="left-die">{leftDie}</span>
@@ -33,7 +30,15 @@ export function TwoDice(): JSX.Element {
             <br></br>
             <span data-testid="right-die">{rightDie}</span>
             <Button onClick={rollRightDie}>Roll Right</Button>
-            {<div>{outcome}</div>}
+            {
+                <div>
+                    {leftDie === rightDie
+                        ? leftDie === 1
+                            ? " Lose"
+                            : " Win"
+                        : ""}
+                </div>
+            }
         </div>
     );
 }
